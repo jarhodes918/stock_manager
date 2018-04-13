@@ -24,7 +24,7 @@ export class StocksComponent implements OnInit {
   addStockForm: FormGroup;
   ticker = new FormControl('', Validators.required);
   shares = new FormControl('', Validators.required);
-  pprice = new FormControl('', Validators.required);
+  purchasePrice = new FormControl('', Validators.required);
 
   constructor(private stockService: StockService,
 			  private quoteService: QuoteService,              
@@ -40,34 +40,45 @@ export class StocksComponent implements OnInit {
     }
 
     this.getStocks(this.auth.currentUser.username);
-
+			
     this.addStockForm = this.formBuilder.group({
        ticker: this.ticker,
        shares: this.shares,
-       pprice: this.pprice
+       purchasePrice: this.purchasePrice
     });
   }
 
-  getCloseQuote(stock: Stock) {
-	  
-	var closequote;
-	
-	console.log("in getCloseQuote: " + stock._id);	  
-	console.log("in getCloseQuote: " + stock.ticker);	  
-
-	this.quoteService.getCloseQuote(stock.ticker).subscribe(
-		data => {this.stock.nprice = +data.CloseQuote;
-				console.log("Status: " + +data.CloseQuote);}, 
+  getlatestPrice(stock: Stock) {
+	  	
+	this.quoteService.getlatestPrice(stock.ticker).subscribe(
+		data => {if (data.latestPrice == "Invalid ticker") {
+					alert("Invalid ticker please delete: " + stock.ticker);
+				 }
+				 else
+				 {
+					stock.latestPrice = +data.latestPrice;
+				    stock.latestTotal = stock.shares * stock.latestPrice;
+		            stock.gainloss = stock.latestTotal - stock.purchaseTotal;
+				 }}, 
 		error => {}, 
-        () => {this.isLoading = false;}
+        () => {}
 	);
-	
-	console.log("in getCloseQuote: " + +this.stock.nprice);	  	
   }
-	
+
+  showlatestPrices() {
+
+	for (var i = 0; i < 10; i++) {
+		console.log("show prices: " + this.stocks.length);
+	}
+  }
+  
   getStocks(user) {
     this.stockService.getStocks(user).subscribe(
-      data => this.stocks = data,
+      data => {this.stocks = data; 
+	           for (var i = 0; i < this.stocks.length; i++) {
+				   console.log(i); 
+				   this.getlatestPrice(this.stocks[i]);
+			   }},
       error => console.log(error),
       () => this.isLoading = false
     );
@@ -88,23 +99,34 @@ export class StocksComponent implements OnInit {
 
 	stock.ticker = this.addStockForm.controls["ticker"].value;
 	stock.shares = +this.addStockForm.controls["shares"].value;
-	stock.pprice = +this.addStockForm.controls["pprice"].value;
-	stock.ptotal = stock.shares * stock.pprice;
-	stock.nprice = 1.00;
-	stock.ntotal = stock.shares * stock.nprice;
-	stock.gainloss = stock.ntotal - stock.ptotal;
+	stock.purchasePrice = +this.addStockForm.controls["purchasePrice"].value;
+	stock.purchaseTotal = stock.shares * stock.purchasePrice;
 	stock.creator = this.auth.currentUser.username;
 	
 	console.log(stock);	  
 
-    this.stockService.addStock(stock).subscribe(
-      res => {
-        this.stocks.push(res);
-        this.addStockForm.reset();
-        this.toast.setMessage('item added successfully.', 'success');
-      },
-      error => console.log(error)
-    );
+	this.quoteService.getlatestPrice(stock.ticker).subscribe(
+		data => {if (data.latestPrice == "Invalid ticker") {
+					alert("Invalid ticker please change: " + stock.ticker);
+				 }
+				 else
+				 {
+					stock.latestPrice = +data.latestPrice;
+				    stock.latestTotal = stock.shares * stock.latestPrice;
+		            stock.gainloss = stock.latestTotal - stock.purchaseTotal;
+
+					this.stockService.addStock(stock).subscribe(
+					  res => {
+						this.stocks.push(res);
+						this.addStockForm.reset();
+						this.toast.setMessage('item added successfully.', 'success');
+					  },
+					  error => console.log(error)
+					);
+				  }}, 
+		error => {console.log(error)}, 
+        () => {}
+	);	
   }
   
   enableStockEditing(stock: Stock) {
@@ -132,25 +154,31 @@ export class StocksComponent implements OnInit {
 
   editStock(stock: Stock) {
 
-    console.log("in editStock: " + stock._id);	  
-    console.log("in editStock: " + stock.ptotal);	  
-    console.log("in editStock: " + stock.gainloss);	  
-
-	stock.ptotal = stock.shares * stock.pprice;
-	stock.gainloss = stock.ntotal - stock.ptotal;
-
-    console.log("in editStock: " + stock._id);	  
-    console.log("in editStock: " + stock.ptotal);	  
-    console.log("in editStock: " + stock.gainloss);	  
+	stock.ticker = stock.ticker.toUpperCase();
+	stock.purchaseTotal = stock.shares * stock.purchasePrice;
 	
-    this.stockService.editStock(stock).subscribe(
-      () => {
-        this.isEditing = false;
-        this.stock = stock;
-        this.toast.setMessage('item edited successfully.', 'success');
-      },
-      error => console.log(error)
-    );
+	this.quoteService.getlatestPrice(stock.ticker).subscribe(
+		data => {if (data.latestPrice == "Invalid ticker") {
+					alert("Invalid ticker please change: " + stock.ticker);
+				 }
+				 else
+				 {
+					stock.latestPrice = +data.latestPrice;
+				    stock.latestTotal = stock.shares * stock.latestPrice;
+		            stock.gainloss = stock.latestTotal - stock.purchaseTotal;
+
+					this.stockService.editStock(stock).subscribe(
+					  () => {
+						this.isEditing = false;
+						this.stock = stock;
+						this.toast.setMessage('item edited successfully.', 'success');
+					  },
+					  error => console.log(error)
+					);
+				  }}, 
+		error => {console.log(error)}, 
+        () => {}
+	);	
   }
 
   deleteStock(stock: Stock) {

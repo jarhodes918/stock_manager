@@ -12,8 +12,8 @@
           <th scope="col">Shares</th>
           <th scope="col">Purchase Price</th>
           <th scope="col">Purchase Total</th>
-          <th scope="col">Today's Price</th>
-          <th scope="col">Total's Total</th>
+          <th scope="col">Latest Price</th>
+          <th scope="col">Latest Total</th>
           <th scope="col">Gain/(Loss)</th>
           <th scope="col">Actions</th>
         </tr>
@@ -27,13 +27,13 @@
         <tr *ngFor="let stock of stocks">
           <td>{{stock.ticker}}</td>
           <td>{{stock.shares}}</td>
-          <td>{{stock.pprice}}</td>
-          <td>{{stock.ptotal}}</td>
-          <td>{{stock.nprice}}</td>
-          <td>{{stock.ntotal}}</td>
-          <td>{{stock.gainloss}}</td>
+          <td>{{stock.purchasePrice | currency}}</td>
+          <td>{{stock.purchaseTotal | currency}}</td>
+          <td>{{stock.latestPrice | currency}}</td>
+          <td>{{stock.latestTotal | currency}}</td>
+          <td>{{stock.gainloss | currency}}</td>
           <td>
-            <button class="btn btn-sm btn-primary" (click)="getCloseQuote(stock)"><i class="fa fa-pencil"></i> Edit</button> 
+            <button class="btn btn-sm btn-primary" (click)="enableStockEditing(stock)"><i class="fa fa-pencil"></i> Edit</button> 
             <button class="btn btn-sm btn-danger" (click)="deleteStock(stock)"><i class="fa fa-trash"></i> Delete</button>
           </td>
         </tr>  
@@ -44,7 +44,7 @@
             <form class="form-inline" #form="ngForm" (ngSubmit)="editStock(stock)">
               <input class="form-control mr-2" type="text" name="ticker" [(ngModel)]="stock.ticker" placeholder="Ticker" required>
               <input class="form-control mr-2" type="number" name="shares" [(ngModel)]="stock.shares" placeholder="Shares" min="0" required>
-              <input class="form-control mr-2" type="number" name="pprice" [(ngModel)]="stock.pprice" placeholder="Price" step="any" min="0" required>
+              <input class="form-control mr-2" type="number" name="purchasePrice" [(ngModel)]="stock.purchasePrice" placeholder="Purchase Price" step="any" min="0" required>
               <button class="btn btn-sm btn-primary mr-2" type="submit" [disabled]="!form.form.valid"><i class="fa fa-floppy-o"></i> Save</button>
               <button class="btn btn-sm btn-warning" (click)="cancelStockEditing()"><i class="fa fa-times"></i> Cancel</button>
             </form>
@@ -58,8 +58,8 @@
 		<div class="card-body">
 			<form class="form-inline" [formGroup]="addStockForm" (ngSubmit)="addStock()">
 				<input class="form-control mr-2" type="text" name="ticker" formControlName="ticker" placeholder="Ticker">
-				<input class="form-control mr-2" type="text" name="shares" formControlName="shares" placeholder="Shares">
-				<input class="form-control mr-2" type="text" name="pprice" formControlName="pprice" placeholder="Purchase Price">
+				<input class="form-control mr-2" type="number" name="shares" formControlName="shares" placeholder="Shares" min="0">
+				<input class="form-control mr-2" type="number" name="purchasePrice" formControlName="purchasePrice" placeholder="Purchase Price" min="0">
 				<button class="btn btn-primary" type="submit" [disabled]="!addStockForm.valid"><i class="fa fa-floppy-o"></i>Add</button>
 			</form>
 		</div>
