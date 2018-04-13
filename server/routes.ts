@@ -24,7 +24,7 @@ export default function setRoutes(app) {
   router.route('/stock/get/:userstock').get(stockCtrl.GetStockByUser);
 
   // Close Quote
-  router.route('/close/quote/:ticker').get(stockCtrl.GetCloseQuote);
+  router.route('/latest/price/:ticker').get(stockCtrl.GetlatestPrice);
 
   // Users
   router.route('/login').post(userCtrl.login);

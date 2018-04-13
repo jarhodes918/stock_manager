@@ -8,11 +8,12 @@ export class QuoteService {
 
   constructor(private http: Http) { }
 
-  getCloseQuote(ticker: String) {
-	var endpoint = "/api/close/quote/" + ticker;
+  getlatestPrice(ticker: String) {
+	var endpoint = "/api/latest/price/" + ticker;
 		
 	console.log(endpoint);
 
 	return this.http.get(endpoint).map(response => response.json());
   }
 }
+
