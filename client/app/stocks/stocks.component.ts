@@ -98,20 +98,11 @@ export class StocksComponent implements OnInit {
 
   private drawAxis() {
     this.g.append("g")
-          .attr("class", "axis axis--x")
           .attr("transform", "translate(0," + this.height + ")")
           .call(d3Axis.axisBottom(this.x));
     this.g.append("g")
-          .attr("class", "axis axis--y")
-          .call(d3Axis.axisLeft(this.y).ticks(10, "%"))
-          .append("text")
-          .attr("class", "axis-title")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", "0.71em")
-          .attr("text-anchor", "end")
-          .text("f");
-}
+          .call(d3Axis.axisLeft(this.y))
+  }
 
   private drawBars(chartdata) {
     this.g.selectAll(".bar")
@@ -121,7 +112,7 @@ export class StocksComponent implements OnInit {
           .attr("x", (d) => this.x(d.ticker) )
           .attr("y", (d) => this.y(d.total) )
           .attr("width", this.x.bandwidth() - 0)
-          .attr("height", (d) => this.height - this.y(d.total) )
+          .attr("height", (d) => this.height - this.y(d.total) );
   }
   
   getlatestPrice(stock: Stock) {
