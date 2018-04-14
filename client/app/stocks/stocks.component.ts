@@ -8,6 +8,18 @@ import { QuoteService } from '../services/quote.service';
 import { ToastComponent } from '../shared/toast/toast.component';
 import { Stock } from '../shared/models/stock.model';
 
+import * as d3 from 'd3-selection';
+import * as d3Scale from 'd3-scale';
+import * as d3Array from 'd3-array';
+import * as d3Axis from 'd3-axis';
+import * as d3Shape from 'd3-shape';
+import * as d3Zoom from 'd3-zoom';
+import * as d3Brush from 'd3-brush';
+import * as d3TimeFormat from 'd3-time-format';
+import * as d3Color from 'd3-color';
+
+import { STATISTICS } from '../shared/data';
+
 @Component({
   selector: 'app-stocks',
   templateUrl: './stocks.component.html',
@@ -15,6 +27,15 @@ import { Stock } from '../shared/models/stock.model';
 })
 
 export class StocksComponent implements OnInit {
+
+  private width: number;
+  private height: number;
+  private margin = {top: 20, right: 20, bottom: 30, left: 75};
+
+  private x: any;
+  private y: any;
+  private svg: any;
+  private g: any;
 
   stock = new Stock();
   stocks: Stock[] = [];
@@ -48,6 +69,61 @@ export class StocksComponent implements OnInit {
     });
   }
 
+  showchart(chartdata) {  
+	
+	for (var i = 0; i < this.stocks.length; i++) {
+		chartdata.push({ticker: this.stocks[i].ticker + "_Purchased", total: this.stocks[i].purchaseTotal});
+		chartdata.push({ticker: this.stocks[i].ticker + "_Current", total: this.stocks[i].latestTotal});
+	}
+
+	this.initSvg();
+	this.initAxis(chartdata);
+	this.drawAxis();
+	this.drawBars(chartdata);	
+  }  
+
+  private initSvg() {
+    this.svg = d3.select("svg");
+    this.width = +this.svg.attr("width") - this.margin.left - this.margin.right;
+    this.height = +this.svg.attr("height") - this.margin.top - this.margin.bottom;
+    this.g = this.svg.append("g").attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+  }
+
+  private initAxis(chartdata) {
+    this.x = d3Scale.scaleBand().rangeRound([0, this.width]).padding(0.4);
+    this.y = d3Scale.scaleLinear().rangeRound([this.height, 0]);
+    this.x.domain(chartdata.map((d) => d.ticker));
+    this.y.domain([0, d3Array.max(chartdata, (d) => d.total)]);
+  }
+
+  private drawAxis() {
+    this.g.append("g")
+          .attr("class", "axis axis--x")
+          .attr("transform", "translate(0," + this.height + ")")
+          .call(d3Axis.axisBottom(this.x));
+    this.g.append("g")
+          .attr("class", "axis axis--y")
+          .call(d3Axis.axisLeft(this.y).ticks(10, "%"))
+          .append("text")
+          .attr("class", "axis-title")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", "0.71em")
+          .attr("text-anchor", "end")
+          .text("f");
+}
+
+  private drawBars(chartdata) {
+    this.g.selectAll(".bar")
+          .data(chartdata)
+          .enter().append("rect")
+		  .attr("fill", "steelblue")
+          .attr("x", (d) => this.x(d.ticker) )
+          .attr("y", (d) => this.y(d.total) )
+          .attr("width", this.x.bandwidth() - 0)
+          .attr("height", (d) => this.height - this.y(d.total) )
+  }
+  
   getlatestPrice(stock: Stock) {
 	  	
 	this.quoteService.getlatestPrice(stock.ticker).subscribe(
@@ -64,21 +140,25 @@ export class StocksComponent implements OnInit {
         () => {}
 	);
   }
-
-  showlatestPrices() {
-
-	for (var i = 0; i < 10; i++) {
-		console.log("show prices: " + this.stocks.length);
-	}
-  }
   
   getStocks(user) {
     this.stockService.getStocks(user).subscribe(
       data => {this.stocks = data; 
 	           for (var i = 0; i < this.stocks.length; i++) {
-				   console.log(i); 
 				   this.getlatestPrice(this.stocks[i]);
-			   }},
+			   }
+				var chartdata = [];
+				
+				for (var i = 0; i < this.stocks.length; i++) {
+					chartdata.push({ticker: this.stocks[i].ticker + "_Purchased", total: this.stocks[i].purchaseTotal});
+					chartdata.push({ticker: this.stocks[i].ticker + "_Current", total: this.stocks[i].latestTotal});
+				}
+	for (i = 0; i < chartdata.length; i++) {
+console.log("data: " + ":" + chartdata[i].ticker + ":" + chartdata[i].total);
+	}
+
+				this.showchart(chartdata);
+			   },
       error => console.log(error),
       () => this.isLoading = false
     );
@@ -103,8 +183,6 @@ export class StocksComponent implements OnInit {
 	stock.purchaseTotal = stock.shares * stock.purchasePrice;
 	stock.creator = this.auth.currentUser.username;
 	
-	console.log(stock);	  
-
 	this.quoteService.getlatestPrice(stock.ticker).subscribe(
 		data => {if (data.latestPrice == "Invalid ticker") {
 					alert("Invalid ticker please change: " + stock.ticker);
@@ -120,6 +198,7 @@ export class StocksComponent implements OnInit {
 						this.stocks.push(res);
 						this.addStockForm.reset();
 						this.toast.setMessage('item added successfully.', 'success');
+						this.getStocks(this.auth.currentUser.username);
 					  },
 					  error => console.log(error)
 					);
@@ -130,20 +209,12 @@ export class StocksComponent implements OnInit {
   }
   
   enableStockEditing(stock: Stock) {
-
-	console.log("in enableStockEditing: " + stock._id);	  
-	console.log("in enableStockEditing: " + stock.ticker);	  
-    
+	  
 	this.isEditing = true;
     this.stock = stock;
-
-	console.log("leaving enableStockEditing: " + this.stock._id);	  
-	console.log("leaving enableStockEditing: " + this.stock.ticker);	  
   }
 
   cancelStockEditing() {
-
-    console.log("in cancelStockEditing: ");	  
     
 	this.isEditing = false;
     this.stock = new Stock();
@@ -172,6 +243,7 @@ export class StocksComponent implements OnInit {
 						this.isEditing = false;
 						this.stock = stock;
 						this.toast.setMessage('item edited successfully.', 'success');
+						this.getStocks(this.auth.currentUser.username);
 					  },
 					  error => console.log(error)
 					);
@@ -182,8 +254,6 @@ export class StocksComponent implements OnInit {
   }
 
   deleteStock(stock: Stock) {
-
-	console.log("in delete: " + stock._id);	  
 
     if (window.confirm('Are you sure you want to permanently delete this item?')) {
       this.stockService.deleteStock(stock).subscribe(

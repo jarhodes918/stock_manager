@@ -11,8 +11,6 @@ export class QuoteService {
   getlatestPrice(ticker: String) {
 	var endpoint = "/api/latest/price/" + ticker;
 		
-	console.log(endpoint);
-
 	return this.http.get(endpoint).map(response => response.json());
   }
 }

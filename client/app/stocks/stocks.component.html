@@ -53,15 +53,25 @@
       </tbody>
     </table>
   </div>
-  <div class="card" *ngIf="!isEditing">
-		<h4 class="card-header">Add new stocks</h4>
-		<div class="card-body">
-			<form class="form-inline" [formGroup]="addStockForm" (ngSubmit)="addStock()">
-				<input class="form-control mr-2" type="text" name="ticker" formControlName="ticker" placeholder="Ticker">
-				<input class="form-control mr-2" type="number" name="shares" formControlName="shares" placeholder="Shares" min="0">
-				<input class="form-control mr-2" type="number" name="purchasePrice" formControlName="purchasePrice" placeholder="Purchase Price" min="0">
-				<button class="btn btn-primary" type="submit" [disabled]="!addStockForm.valid"><i class="fa fa-floppy-o"></i>Add</button>
-			</form>
-		</div>
-  </div>
 </div>
+
+<div class="card">
+	<h4 class="card-header">Gains and Losses</h4>
+    <svg width="1100" height="250"></svg>
+</div>
+
+
+<div class="card" *ngIf="!isEditing">
+	<h4 class="card-header">Add new stocks</h4>
+	<div class="card-body">
+		<form class="form-inline" [formGroup]="addStockForm" (ngSubmit)="addStock()">
+			<input class="form-control mr-2" type="text" name="ticker" formControlName="ticker" placeholder="Ticker">
+			<input class="form-control mr-2" type="number" name="shares" formControlName="shares" placeholder="Shares" min="0">
+			<input class="form-control mr-2" type="number" name="purchasePrice" formControlName="purchasePrice" placeholder="Purchase Price" min="0">
+			<button class="btn btn-primary" type="submit" [disabled]="!addStockForm.valid"><i class="fa fa-floppy-o"></i>Add</button>
+		</form>
+	</div>
+</div>
+
+
+	

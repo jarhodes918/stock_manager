@@ -19,7 +19,6 @@ import { LogoutComponent } from './logout/logout.component';
 import { AccountComponent } from './account/account.component';
 import { AdminComponent } from './admin/admin.component';
 import { NotFoundComponent } from './not-found/not-found.component';
-import { BrowserModule } from '@angular/platform-browser';
 
 export function tokenGetter() {
   return localStorage.getItem('token');
@@ -45,8 +44,7 @@ export function tokenGetter() {
       config: {
         tokenGetter: tokenGetter,
         // whitelistedDomains: ['localhost:3000', 'localhost:4200']
-      }}),
-	BrowserModule
+      }})
   ],
   providers: [
     AuthService,

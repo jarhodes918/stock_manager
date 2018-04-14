@@ -1,7 +1,4 @@
-.table td,
-.table th {
-  width: 13%;
-}
+/* You can add global styles to this file, and also import other style files */
 
 .bar {
   fill: steelblue;
