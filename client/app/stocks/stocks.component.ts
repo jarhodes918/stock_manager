@@ -71,11 +71,6 @@ export class StocksComponent implements OnInit {
 
   showchart(chartdata) {  
 	
-	for (var i = 0; i < this.stocks.length; i++) {
-		chartdata.push({ticker: this.stocks[i].ticker + "_Purchased", total: this.stocks[i].purchaseTotal});
-		chartdata.push({ticker: this.stocks[i].ticker + "_Current", total: this.stocks[i].latestTotal});
-	}
-
 	this.initSvg();
 	this.initAxis(chartdata);
 	this.drawAxis();
@@ -108,11 +103,11 @@ export class StocksComponent implements OnInit {
     this.g.selectAll(".bar")
           .data(chartdata)
           .enter().append("rect")
-		  .attr("fill", "steelblue")
           .attr("x", (d) => this.x(d.ticker) )
           .attr("y", (d) => this.y(d.total) )
           .attr("width", this.x.bandwidth() - 0)
-          .attr("height", (d) => this.height - this.y(d.total) );
+          .attr("height", (d) => this.height - this.y(d.total) )
+		  .attr("fill", (d) => {if (d.ticker.substring(d.ticker.length-1) == "y") { return "blue"} else { return "red"};} );
   }
   
   getlatestPrice(stock: Stock) {
@@ -141,13 +136,10 @@ export class StocksComponent implements OnInit {
 				var chartdata = [];
 				
 				for (var i = 0; i < this.stocks.length; i++) {
-					chartdata.push({ticker: this.stocks[i].ticker + "_Purchased", total: this.stocks[i].purchaseTotal});
-					chartdata.push({ticker: this.stocks[i].ticker + "_Current", total: this.stocks[i].latestTotal});
+					chartdata.push({ticker: i+1 + " " + this.stocks[i].ticker + "_Buy", total: this.stocks[i].purchaseTotal});
+					chartdata.push({ticker: i+1 + " " + this.stocks[i].ticker + "_Now", total: this.stocks[i].latestTotal});
 				}
-	for (i = 0; i < chartdata.length; i++) {
-console.log("data: " + ":" + chartdata[i].ticker + ":" + chartdata[i].total);
-	}
-
+				
 				this.showchart(chartdata);
 			   },
       error => console.log(error),
