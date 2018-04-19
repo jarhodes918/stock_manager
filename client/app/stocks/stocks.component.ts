@@ -105,10 +105,20 @@ export class StocksComponent implements OnInit {
           .enter().append("rect")
           .attr("x", (d) => this.x(d.ticker) )
           .attr("y", (d) => this.y(d.total) )
-          .attr("width", this.x.bandwidth() - 0)
+          .attr("width", this.x.bandwidth() )
           .attr("height", (d) => this.height - this.y(d.total) )
 		  .attr("fill", (d) => {if (d.ticker.substring(d.ticker.length-1) == "y") { return "blue"} else { return "red"};} );
-  }
+
+    this.g.selectAll(".bar-text")
+          .data(chartdata)
+          .enter().append("text")
+          .attr("x", (d) => this.x(d.ticker) + this.x.bandwidth() / 2)
+          .attr("y", (d) => this.y(d.total) )
+          .attr("text-anchor", "middle")
+		  .text((d,i) => {if (d.ticker.substring(d.ticker.length-1) == "y") { return ""} 
+			else {  return Math.round(((chartdata[i].total-chartdata[i-1].total)/chartdata[i-1].total*100) 
+			               * Math.pow(10, 1)) / Math.pow(10, 1) + "%"}});
+}
   
   getlatestPrice(stock: Stock) {
 	  	
